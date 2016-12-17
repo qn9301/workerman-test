@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		div{
+			position: absolute;
+			width:100px;
+			height:100px;
+			background: red;
+		}
+	</style>
+</head>
+<body>
+	<div id="box" style="top:0px;left:0px;"></div>
+</body>
+<script>
+	var w       = new WebSocket("ws://127.0.0.1:8080");
+	var box     = document.getElementById("box");
+	var box_arr = [];
+		box.status = 0;
+	document.onmousemove = function (e){
+		var x = e.clientX;
+		var y = e.clientY;
+		box.style.left  = x+"px";
+		box.style.top   = y+"px";
+		move(x, y);
+	}
+
+	function move(x,y){
+		w.send(x+":"+y);
+	}
+
+	// w.onopen    = function (){
+	// }
+	w.onmessage = function (event){
+		var data = JSON.parse(event.data);
+		if(data['type'] == 1){
+			box_arr[data['id']] = box;
+			return ;
+		}
+		for(var i in data){
+			if(box_arr[i] == box){
+				continue;
+			}
+			if(!box_arr[i]){
+				_init(i);
+			}
+			box_arr[i].style.top  = data[i].data.top + "px";
+			box_arr[i].style.left = data[i].data.left + "px";
+		}
+	}
+
+	function _init(id){
+		var div = document.createElement('div');
+		div.style.position   = "absolute";
+		div.style.width      = "100px";
+		div.style.height     = "100px";
+		div.style.background = "red";
+		div.style.top        = "0px";
+		div.style.left       = "0px";
+		document.body.appendChild(div);
+		box_arr[id] = div;
+	}
+</script>
+</html>
